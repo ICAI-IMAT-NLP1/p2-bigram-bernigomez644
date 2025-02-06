@@ -28,10 +28,16 @@ def load_and_preprocess_data(
     """
     with open(filepath, "r") as file:
         lines: List[str] = file.read().splitlines()
-
-    # TODO
-    bigrams: List[Tuple[str, str]] = None
-
+        bigrams = []
+        for line in lines:
+            words = line.lower().split()
+            for word in words:
+                if word.isalpha():
+                    processed_word = start_token + word + end_token
+                    word_biagram = []
+                    for i in range(len(processed_word) - 1):
+                        word_biagram.append((processed_word[i], processed_word[i + 1]))
+                bigrams.extend(word_biagram)
     return bigrams
 
 
@@ -49,9 +55,12 @@ def char_to_index(alphabet: str, start_token: str, end_token: str) -> Dict[str, 
     """
     # Create a dictionary with start token at the beginning and end token at the end
     # TODO
-    char_to_idx: Dict[str, int] = None
+    alphabet = start_token + alphabet + end_token
+    char_to_index = {}
+    for i, char in enumerate(alphabet):
+        char_to_index[char] = i
 
-    return char_to_idx
+    return char_to_index
 
 
 def index_to_char(char_to_index: Dict[str, int]) -> Dict[int, str]:
@@ -65,8 +74,9 @@ def index_to_char(char_to_index: Dict[str, int]) -> Dict[int, str]:
         Dict[int, str]: A dictionary mapping each index back to its corresponding character.
     """
     # Reverse the char_to_index mapping
-    # TODO
-    idx_to_char: Dict[int, str] = None
+    idx_to_char = {}
+    for char, index in char_to_index.items():
+        idx_to_char[index] = char
 
     return idx_to_char
 
@@ -91,12 +101,16 @@ def count_bigrams(
         formed by the i-th and j-th characters in the alphabet.
     """
 
+    alphabet_size = len(char_to_idx)
     # Initialize a 2D tensor for counting bigrams
     # TODO
-    bigram_counts: torch.Tensor = None
+    bigram_counts: torch.Tensor = torch.zeros((alphabet_size, alphabet_size))
 
-    # Iterate over each bigram and update the count in the tensor
-    # TODO
+    for char1, char2 in bigrams:
+        if char1 in char_to_idx.keys() and char2 in char_to_idx.keys():
+            idx1 = char_to_idx[char1]
+            idx2 = char_to_idx[char2]
+            bigram_counts[idx1, idx2] += 1
 
     return bigram_counts
 
@@ -122,6 +136,7 @@ def plot_bigram_counts(bigram_counts: torch.Tensor, idx_to_char: Dict):
 
     plt.axis("off")
     plt.show()
+    # plt.savefig("bigram_plot.png")
 
 
 if __name__ == "__main__":
